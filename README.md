@@ -15,7 +15,7 @@ s3backup --bucket=<name> list
 ### Create new backup
 
 ```shell
-s3backup --bucket=<name> create --src=<pattern> --dst=<directory> --group=week 
+s3backup --bucket=<name> create --src=<pattern> --dst=<directory> --group=week --clean --keep=2
 ```
 
 ### Delete backups
@@ -32,9 +32,5 @@ s3backup --bucket=<name> clean --dst=<directory> --group=week --keep=0
 
 ### Build controller and proxy
 ```shell
-docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.1
-docker push jpascal/s3backup:v0.0.1
-```
-```shell
-docker build . -t jpascal/s3backup:v0.0.1
-```
+docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.2
+docker push jpascal/s3backup:v0.0.2

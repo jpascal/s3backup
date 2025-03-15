@@ -89,6 +89,8 @@ type CreateCommand struct {
 	Source      string `name:"src" help:"source files" default:"*"`
 	Group       string `help:"group name" name:"group"`
 	Destination string `name:"dst" default:"/"`
+	Clean       bool   `name:"clean" help:"clean old backups using keep value" default:"/"`
+	Keep        uint   `help:"keep number of files" name:"keep"`
 }
 
 func (l *CreateCommand) Run(ctx *Context) error {
@@ -117,6 +119,14 @@ func (l *CreateCommand) Run(ctx *Context) error {
 		}); err != nil {
 			return err
 		}
+	}
+	if l.Clean {
+		cleanCommand := &CleanCommand{
+			Group:       l.Group,
+			Keep:        l.Keep,
+			Destination: l.Destination,
+		}
+		return cleanCommand.Run(ctx)
 	}
 	return nil
 }
