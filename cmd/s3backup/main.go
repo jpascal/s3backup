@@ -89,7 +89,7 @@ type CreateCommand struct {
 	Source      string `name:"src" help:"source files" default:"*"`
 	Group       string `help:"group name" name:"group"`
 	Destination string `name:"dst" default:"/"`
-	Clean       bool   `name:"clean" help:"clean old backups using keep value" default:"/"`
+	Clean       bool   `name:"clean" help:"clean old backups using keep value" default:"false"`
 	Keep        uint   `help:"keep number of files" name:"keep"`
 }
 
