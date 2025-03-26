@@ -32,5 +32,6 @@ s3backup --bucket=<name> clean --dst=<directory> --group=week --keep=0
 
 ### Build controller and proxy
 ```shell
-docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.3
-docker push jpascal/s3backup:v0.0.3
+docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.5
+docker push jpascal/s3backup:v0.0.5
+```

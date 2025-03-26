@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/rodaine/table"
 	"log/slog"
 	"math"
@@ -88,37 +89,51 @@ func (l *CleanCommand) Run(ctx *Context) error {
 type CreateCommand struct {
 	Source      string `name:"src" help:"source files" default:"*"`
 	Group       string `help:"group name" name:"group"`
+	PartSize    uint   `help:"part size in Mb" name:"partSize" default:"1000"`
 	Destination string `name:"dst" default:"/"`
 	Clean       bool   `name:"clean" help:"clean old backups using keep value" default:"false"`
 	Keep        uint   `help:"keep number of files" name:"keep"`
 }
+
+const MaxPartSize = int64(50 * 1024 * 1024)
 
 func (l *CreateCommand) Run(ctx *Context) error {
 	filePaths, err := filepath.Glob(l.Source)
 	if err != nil {
 		return err
 	}
+
+	uploader := s3manager.NewUploaderWithClient(ctx.S3, func(uploader *s3manager.Uploader) {
+		uploader.PartSize = int64(l.PartSize) * 1024 * 1024 // 10MB part size
+	})
+
 	for _, filePath := range filePaths {
-		fileStats, err := os.Lstat(filePath)
-		if err != nil {
+		if err := func(filePath string) error {
+			file, err := os.Open(filePath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+			fileStats, err := file.Stat()
+			if err != nil {
+				return err
+			} else if fileStats.IsDir() {
+				return nil
+			}
+			slog.Info(fmt.Sprintf("upload %s to s3://%s (size: %s, group: %s)", filePath, filepath.Join(ctx.Bucket, l.Destination, filePath), prettyByteSize(fileStats.Size()), l.Group))
+			_, err = uploader.Upload(&s3manager.UploadInput{
+				Bucket: aws.String(ctx.Bucket),
+				Key:    aws.String(filepath.Join(l.Destination, filePath)),
+				Body:   file,
+				Metadata: map[string]*string{
+					"group": aws.String(l.Group),
+				},
+			})
+			return err
+		}(filePath); err != nil {
 			return err
 		}
-		if fileStats.IsDir() {
-			continue
-		}
-		slog.Info(fmt.Sprintf("upload %s to s3://%s (size: %s, group: %s)", filePath, filepath.Join(ctx.Bucket, l.Destination, filePath), prettyByteSize(fileStats.Size()), l.Group))
-		if file, err := os.Open(filePath); err != nil {
-			return err
-		} else if _, err := ctx.S3.PutObject(&s3.PutObjectInput{
-			Bucket: aws.String(ctx.Bucket),
-			Key:    aws.String(filepath.Join(l.Destination, filePath)),
-			Body:   file,
-			Metadata: map[string]*string{
-				"group": aws.String(l.Group),
-			},
-		}); err != nil {
-			return err
-		}
+
 	}
 	if l.Clean {
 		cleanCommand := &CleanCommand{
