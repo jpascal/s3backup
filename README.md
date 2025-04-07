@@ -35,3 +35,67 @@ s3backup --bucket=<name> clean --dst=<directory> --group=week --keep=0
 docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.6
 docker push jpascal/s3backup:v0.0.6
 ```
+
+
+### Commands
+```
+Flags:
+  -h, --help             Show context-sensitive help.
+      --bucket=STRING    bucket name
+
+Commands:
+  create [flags]
+    do backup
+
+  list [flags]
+    list files
+
+  clean [flags]
+    clean backups
+
+  delete [flags]
+    delete files by prefix
+
+```
+
+##### Command: create
+```
+Flags:
+  -h, --help             Show context-sensitive help.
+      --bucket=STRING    bucket name
+
+      --src="*"          source files
+      --group=STRING     group name
+      --partSize=1000    part size in Mb
+      --dst="/"
+      --clean            clean old backups using keep value
+      --keep=UINT        keep number of files
+```
+
+#### Command: list 
+```
+Flags:
+  -h, --help             Show context-sensitive help.
+      --bucket=STRING    bucket name
+
+      --prefix=          prefix
+```
+
+#### Command: clean
+```
+Flags:
+  -h, --help             Show context-sensitive help.
+      --bucket=STRING    bucket name
+
+      --group=STRING     group name
+      --keep=UINT        keep number of files
+```
+
+#### Command: delete
+```
+Flags:
+  -h, --help             Show context-sensitive help.
+      --bucket=STRING    bucket name
+
+      --prefix=          prefix
+```
