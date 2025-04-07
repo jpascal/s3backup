@@ -69,8 +69,9 @@ func (l *CleanCommand) Run(ctx *Context) error {
 
 	slices.SortFunc(collected, func(a, b *s3.Object) int {
 		at, bt := *a.LastModified, *b.LastModified
-		return at.Compare(bt)
+		return bt.Compare(at)
 	})
+
 	if len(collected) > int(l.Keep) {
 		for _, item := range collected[l.Keep:] {
 			slog.Info(fmt.Sprintf("delete s3://%s (size: %s)", filepath.Join(ctx.Bucket, *item.Key), prettyByteSize(*item.Size)))
