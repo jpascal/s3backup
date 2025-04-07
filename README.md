@@ -30,8 +30,8 @@ s3backup --bucket=<name> delete --prefix=<directory|object>
 s3backup --bucket=<name> clean --dst=<directory> --group=week --keep=0
 ```
 
-### Build controller and proxy
+### Build
 ```shell
-docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.5
-docker push jpascal/s3backup:v0.0.5
+docker build . --platform linux/amd64 -t jpascal/s3backup:v0.0.6
+docker push jpascal/s3backup:v0.0.6
 ```
